@@ -1,17 +1,43 @@
 import json
 from channels.generic.websocket import WebsocketConsumer
+from asgiref.sync import async_to_sync
+from django.utils import timezone, dateformat
+
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
-        print('Connect')
+        self.id = self.scope['url_route']['kwargs']['room_id']
+        self.room_group_name = 'chat_%s' % self.id
+        self.user = self.scope['user']
+        # Join room group
+        async_to_sync(self.channel_layer.group_add)(
+            self.room_group_name,
+            self.channel_name
+        )
         self.accept()
-        # return super().connect()
-    def disconnect(self, code):
-        print("Disconnet")
-        # return super().disconnect(code)
+    def disconnect(self, close_code):
+        async_to_sync(self.channel_layer.group_discard)
+        (self.room_group_name,
+        self.channel_name)
+        print("Desconectado")
     def receive(self, text_data):
-
+        print("Recibido!")
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
+       
+        async_to_sync(self.channel_layer.group_send)(
+            self.room_group_name,
+            {
+                'type' : 'chat_message',
+                'message' : message,
+                'username' : self.user.username,
+                'datetime' : dateformat.format(timezone.now(), 'Y-m-d H:i:s')
+            }
+        )
+        #print(message)
+        #self.send(text_data=json.dumps({'message': message}))
+    def chat_message(self, event):
+        message = event['message']
+        datetime = event['datetime']
+        username = event['username']
         print(message)
-        self.send(text_data=json.dumps({ 'message':message }))
-        # return super().receive(text_data, bytes_data)
+        self.send(text_data=json.dumps({'message': message, 'username': username, 'datetime' : datetime}))    
