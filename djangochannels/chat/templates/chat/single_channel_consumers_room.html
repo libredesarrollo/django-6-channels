@@ -10,7 +10,6 @@
     </div>
 
     <script>
-        var user = "{{ request.user }}"
         var url = 'ws://'+window.location.host+'/ws/chat/room/{{ room.id }}'
         var chatSocket = new WebSocket(url)
 
@@ -24,24 +23,10 @@
         chatSocket.onopen = function(e){
             console.log('Channels WS is Open!')
         }
-        chatSocket.onmessage = function (data) {
-            var data = JSON.parse(data.data)
-            var msj = data.message
-            var username = data.username
-            var datetime = data.datetime
+        chatSocket.onmessage = function(data){
+            var message = JSON.parse(data.data)
             boxMessage = document.querySelector("#BoxMessage")
-            var customClass = 'alert-success me-5'
-          
-            if(user != username){
-                var customClass = 'alert-warning ms-5'
-            }
-            boxMessage.innerHTML += `
-            <div class="alert ${customClass} mt-3">
-                ${msj}
-                <small class='fst-italic'>${username}</small>
-                <small class='float-end'>${datetime}</small>
-            </div>
-            `
+            boxMessage.innerHTML += '<div class="alert alert-success mt-3">' + message.message + '</div>'
         }
         chatSocket.onclose = function(e){
             console.log('Channels WS is Close!')

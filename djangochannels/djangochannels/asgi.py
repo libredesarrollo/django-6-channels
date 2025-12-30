@@ -7,6 +7,8 @@ from django.core.asgi import get_asgi_application
 from django.urls import path
 
 import chat.routing
+import alert.routing
+from alert.middlewares import TokenAuthMiddleware
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mysite.settings")
 # Initialize Django ASGI application early to ensure the AppRegistry
@@ -19,9 +21,11 @@ application = ProtocolTypeRouter({
 
     # WebSocket chat handler
     "websocket": AllowedHostsOriginValidator(
-        AuthMiddlewareStack(
+        # AuthMiddlewareStack( # auth para los que NO son Vue con el Token de DRF
+        TokenAuthMiddleware( # Token - DRF - Vue
             # [
-                URLRouter(chat.routing.websocket_urlpatterns)
+                # URLRouter(chat.routing.websocket_urlpatterns)
+                URLRouter(alert.routing.websocket_urlpatterns)
             # ]
         )
     ),
