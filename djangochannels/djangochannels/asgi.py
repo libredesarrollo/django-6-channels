@@ -21,12 +21,14 @@ application = ProtocolTypeRouter({
 
     # WebSocket chat handler
     "websocket": AllowedHostsOriginValidator(
-        # AuthMiddlewareStack( # auth para los que NO son Vue con el Token de DRF
-        TokenAuthMiddleware( # Token - DRF - Vue
-            # [
-                # URLRouter(chat.routing.websocket_urlpatterns)
-                URLRouter(alert.routing.websocket_urlpatterns)
-            # ]
+       AuthMiddlewareStack( # auth para los que NO son Vue con el Token de DRF, este MD llega el scope['user'] con la sesion
+        TokenAuthMiddleware( # Token - DRF - Vue // en DRF NO se emplea la sesion si no el token
+                URLRouter(
+                    # Combinamos las listas de patrones de URL de cada app
+                    chat.routing.websocket_urlpatterns + 
+                    alert.routing.websocket_urlpatterns
+                )
+            )
         )
     ),
 })
