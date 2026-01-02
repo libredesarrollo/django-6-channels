@@ -44,7 +44,9 @@ def logout(request):
 @permission_classes([IsAuthenticated])
 def alerts(request):
     print(request.user.id)
-    alerts = Alert.objects.filter(user_id=request.user.id)
+    # alerts = Alert.objects.filter(user_id=request.user.id)
+    alerts = Alert.objects.order_by('create_at').all()
+
     serializer = AlertSerializer(alerts, many=True)
     return Response(serializer.data)
 
